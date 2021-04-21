@@ -25,7 +25,7 @@ public class SolutionUnitTests
                 {1, 1, 0, 1, 1},
                 {1, 1, 1, 0, 1},
                 {1, 1, 1, 1, 0}};
-        int timeLimit = -1;
+        int timeLimit = 3;
         int[] expectedResult = {0,1};
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
@@ -40,7 +40,7 @@ public class SolutionUnitTests
                 {9, 3, 2, 0, -1},
                 {9, 3, 2, 2, 0}
         };
-        int timeLimit = -1;
+        int timeLimit = 1;
         int[] expectedResult = {1,2};
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);

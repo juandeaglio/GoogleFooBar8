@@ -19,7 +19,7 @@ public class Solution
         {
             bunniesResult = new ArrayList<>();
             int rowWithMinimumCycleCosts = FindMinimumCycleRow(times);
-            while(timeLimit-times[rowWithMinimumCycleCosts][times.length-1] >= times[rowWithMinimumCycleCosts][times.length-1])
+            while(timeLimit-times[rowWithMinimumCycleCosts][times.length-1] > 0)
             {
                 for(int i = 0; i < times.length; i++)
                 {
