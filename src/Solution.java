@@ -16,7 +16,10 @@ public class Solution
         {
             int[] bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
             int minimumCostVertexChosen = GetMinimumOf(bellmanVertexArr, 0, bunniesResult);
+            int totalCost = 0;
+            int origin = 0;
             int[] bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+            totalCost+= times[origin][minimumCostVertexChosen];
             while(timeLimit - bellmanVertexArr[minimumCostVertexChosen] >= bellmanVertexArrFuture[bellmanVertexArr.length-1])
             {
                 int[][] bellmanGraphArr = new int[times.length][times.length];
@@ -26,10 +29,11 @@ public class Solution
                     bunniesResult.add(minimumCostVertexChosen-1);
                 for(int i = 0; i < bellmanVertexArr.length; i++)
                 {
-                    bellmanGraphArr[i] = BellmanFordWithAGivenStart(times, i);
+                    bellmanGraphArr[i] = BellmanFordWithAGivenStart(times, i, times[minimumCostVertexChosen][i]);
                 }
-
+                origin = minimumCostVertexChosen;
                 minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanGraphArr, minimumCostVertexChosen, bunniesResult);
+                totalCost+= times[origin][minimumCostVertexChosen];
                 bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
             }
 
@@ -108,7 +112,36 @@ public class Solution
         }
         return bellmanVertexArr;
     }
-
+    private static int[] BellmanFordWithAGivenStart(int[][] times, int start, int cost) {
+        int[] bellmanVertexArr = new int[times.length];
+        Arrays.fill(bellmanVertexArr, Integer.MAX_VALUE);
+        bellmanVertexArr[start] = 0;
+        boolean changesWereMade = true;
+        while(changesWereMade)
+        {
+            boolean wasThereAChange = false;
+            for(int i = 0; i < bellmanVertexArr.length; i++)
+            {
+                if(bellmanVertexArr[i] != Integer.MAX_VALUE)
+                {
+                    for(int j = 0; j < times[i].length; j++)
+                    {
+                        if(j != i && times[i][j] < bellmanVertexArr[j])
+                        {
+                            bellmanVertexArr[j] = times[i][j];
+                            wasThereAChange = true;
+                        }
+                    }
+                }
+            }
+            changesWereMade = wasThereAChange;
+        }
+        for(int j = 0; j < bellmanVertexArr.length; j++)
+        {
+            bellmanVertexArr[j] += cost;
+        }
+        return bellmanVertexArr;
+    }
     private static int FindMinimumCycleRow(int[][] graph)
     {
         int rowToReturn = -1;
