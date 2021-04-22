@@ -36,8 +36,6 @@ public class Solution
                 totalCost+= times[origin][minimumCostVertexChosen];
                 bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
             }
-
-
         }
         int[] result = null;
         if(bunniesResult.size() >= 1)

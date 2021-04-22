@@ -31,6 +31,22 @@ public class SolutionUnitTests
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
     @Test
+    public void ShouldReturnSomeBunnies()
+    {
+        int[][]graph = {
+                {0, 1, 1, 1, 1, 2, 2},
+                {1, 0, 1, 1, 1, 1, 1},
+                {1, 1, 0, 1, 1, 1,-1},
+                {1, -4, 1, 0, 1, 1, 1},
+                {1, 1, 1, 1, 0, 1, 1},
+                {1, 1, 1, 1, 1, 0, 1},
+                {1, 1, 1, 1, 1, 1, 0},};
+        int timeLimit = 1;
+        int[] expectedResult = {1,2,3,4};
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertArrayEquals(expectedResult, actualResult);
+    }
+    @Test
     public void ShouldReturnTwoBunniesWithCycles()
     {
         int[][]graph = {
@@ -67,9 +83,22 @@ public class SolutionUnitTests
                 {1, 1, 0, 1, 1},
                 {1, 1, 1, 0, 1},
                 {1, 1, 1, 1, -1}};
-        boolean expectedResult = true;
         boolean actualResult = Solution.IsCycleInfinite(graph, Solution.FindCycleIfExists(graph));
-        Assertions.assertEquals(expectedResult, actualResult);
+        Assertions.assertTrue(actualResult);
+    }
+    @Test
+    public void ShouldFindInfiniteCycleThatIsntImmediatelyReachable()
+    {
+        int[][]graph = {
+                {0, 1, 1, 1, 1},
+                {1, 0, 1, 1, 1},
+                {1, 1, 0, 1, 1},
+                {1, 1, 1, -1, 1},
+                {1, 1, 1, 1, 1}};
+        int timeLimit = 1;
+        int[] expectedResult = {0,1,2};
+        int[] actualResult = Solution.RescueTheBunnies(graph,timeLimit);
+        Assertions.assertArrayEquals(expectedResult, actualResult);
     }
     @Test
     public void ShouldReturnAllPossibleBunnies()
