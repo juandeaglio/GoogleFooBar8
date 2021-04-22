@@ -102,6 +102,20 @@ public class SolutionUnitTests
         Assertions.assertTrue(actualResult);
     }
     @Test
+    public void ShouldFindANegativeCycleBetweenManyVertices()
+    {
+        int[][] graph = {
+                {0, 1, 1, 1, 1, 2, 2},
+                {1, 0, 1, 1, 3, 1, 1},
+                {1, 1, 0, 1, 1, 1, -1},
+                {1, -4, 1, 0, 1, 1, 1},
+                {1, 1, 1, 1, 0, 1, 1},
+                {1, 1, 1, 1, 1, 0, 2},
+                {1, -10, 1, 1, 1, 1, 0},};
+        boolean actualResult = Solution.FindCycleIfExists(graph);
+        Assertions.assertTrue(actualResult);
+    }
+    @Test
     public void ShouldReturnAllPossibleBunnies()
     {
         int[][]graph = {

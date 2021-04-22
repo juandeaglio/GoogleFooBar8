@@ -167,8 +167,51 @@ public class Solution
             rowToReturn = row;
         return rowToReturn;
     }
+    private static boolean DFSForNegativeCycle(int i, boolean[] visited,
+                                               boolean[] recStack, int[][] graph, int totalCost)
+    {
+        if (recStack[i] && totalCost < 0)
+            return true;
+        if (visited[i])
+            return false;
+        visited[i] = true;
+        recStack[i] = true;
+        HashSet<Integer> children = GetEdgesFromVertex(graph,i);
 
-    public static boolean  FindCycleIfExists(int[][] graph)
+        for (Integer c: children)
+        {
+            boolean[] newVisited = Arrays.copyOf(visited, graph.length);
+            if (DFSForNegativeCycle(c, newVisited, recStack, graph, graph[i][c] + totalCost))
+                return true;
+        }
+
+        recStack[i] = false;
+
+        return false;
+    }
+
+    private static HashSet<Integer> GetEdgesFromVertex(int[][] graph, int i)
+    {
+        HashSet<Integer> edges = new HashSet<>();
+        for(int j = 0; j < graph.length; j++)
+        {
+            if(j != i)
+                edges.add(j);
+        }
+        return edges;
+    }
+
+    private static boolean isNegativeCyclic(int[][]graph)
+    {
+        boolean[] visited = new boolean[graph.length];
+        boolean[] recStack = new boolean[graph.length];
+        for (int i = 0; i < graph.length; i++)
+            if (DFSForNegativeCycle(i, visited, recStack, graph, 0))
+                return true;
+        return false;
+    }
+
+    public static boolean FindCycleIfExists(int[][] graph)
     {
         int cycleRow = -1;
         for(int i = 0; i < graph.length && cycleRow == -1; i++)
@@ -176,72 +219,12 @@ public class Solution
             if(graph[i][i] < 0)
                 cycleRow = i;
         }
-        return cycleRow != -1;
+        if(cycleRow != -1)
+            return true;
+        else
+        {
+            return isNegativeCyclic(graph);
+        }
     }
 
-    static class Graph
-    {
-        private final Map<Integer, Vertex> adjVertices;
-        Graph(int[][] asIntArr)
-        {
-            adjVertices = new HashMap<>();
-            for(int i = 0; i < asIntArr.length; i++)
-            {
-                addVertex(i);
-                for(int j = 0; j < asIntArr[i].length; j++)
-                {
-                    if(asIntArr[i][j] != 0)
-                    {
-                        Edge newEdge = addEdge(i, j, asIntArr[i][j]);
-                    }
-                }
-            }
-        }
-        void addVertex(int room)
-        {
-            adjVertices.putIfAbsent(room, new Vertex(room));
-        }
-        Edge addEdge(int from, int to, int cost)
-        {
-            return adjVertices.get(from).AddEdge(to, cost);
-        }
-    }
-    static class Edge
-    {
-        int leadsToRoom;
-        int startsFromRoom;
-        int cost;
-        Edge(int fromNumber, int toRoomNumber, int weight)
-        {
-            startsFromRoom = fromNumber;
-            leadsToRoom = toRoomNumber;
-            cost = weight;
-        }
-    }
-    static class Vertex
-    {
-        int room;
-        List<Edge> edges;
-        Vertex(int roomNumber)
-        {
-            this.room = roomNumber;
-            edges = new ArrayList<>();
-        }
-        public Edge AddEdge(int to, int cost)
-        {
-            Edge newEdge = new Edge(room,to,cost);
-            edges.add(newEdge);
-            return newEdge;
-        }
-        public Edge GetEdge(int to)
-        {
-            Edge found = null;
-            for (Edge edge: edges)
-            {
-                if(edge.leadsToRoom == to)
-                    found = edge;
-            }
-            return found;
-        }
-    }
 }
