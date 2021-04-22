@@ -4,7 +4,7 @@ public class Solution
 {
     public static int[] RescueTheBunnies(int[][] times, int times_limit)
     {
-        ArrayList<Integer> bunniesResult = null;
+        ArrayList<Integer> bunniesResult = new ArrayList<>();
         int timeLimit = times_limit;
         if(IsCycleInfinite(times, FindCycleIfExists(times))) // TODO: will not work if the cycle is not reachable w/ the timelimit
         {
@@ -15,17 +15,62 @@ public class Solution
         else
         {
             int[] bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
+            int minimumCostVertexChosen = GetMinimumOf(bellmanVertexArr, 0, bunniesResult);
+            int[] bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+            while(timeLimit - bellmanVertexArr[minimumCostVertexChosen] >= bellmanVertexArrFuture[bellmanVertexArr.length-1])
+            {
+                timeLimit -= bellmanVertexArr[minimumCostVertexChosen];
+                if(minimumCostVertexChosen > 0 && minimumCostVertexChosen < bellmanVertexArr.length-1 && !bunniesResult.contains(minimumCostVertexChosen-1))
+                    bunniesResult.add(minimumCostVertexChosen-1);
+                bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+                minimumCostVertexChosen = GetMinimumOf(bellmanVertexArr, minimumCostVertexChosen, bunniesResult);
+                bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+            }
+
+
         }
         int[] result = null;
-        if(bunniesResult != null && bunniesResult.size() > 1)
+        if(bunniesResult.size() >= 1)
             result = bunniesResult.stream().mapToInt(i->i).toArray();
         return result;
     }
 
+    private static int GetMinimumOf(int[] bellmanVertexArr, int excluding, ArrayList<Integer> bunniesPickedUp)
+    {
+        int rowChosen = -1;
+        int minimumVal = Integer.MAX_VALUE;
+        for(int i = 0; i < bellmanVertexArr.length; i++)
+        {
+            if((i != excluding && bellmanVertexArr[i] < minimumVal) ||
+                    (bellmanVertexArr[i] == minimumVal &&
+                            (rowChosen == 0 && !bunniesPickedUp.contains((i-1)))))
+            {
+                minimumVal = bellmanVertexArr[i];
+                rowChosen = i;
+            }
+        }
+        return rowChosen;
+    }
+    private static int GetMinimumOfWithFuture(int[] bellmanVertexArr, int[] future, int excluding, ArrayList<Integer> bunniesPickedUp)
+    {
+        int rowChosen = -1;
+        int minimumVal = Integer.MAX_VALUE;
+        for(int i = 0; i < bellmanVertexArr.length; i++)
+        {
+            if((i != excluding && bellmanVertexArr[i] < minimumVal) ||
+                    (bellmanVertexArr[i] == minimumVal &&
+                            (rowChosen == 0 && !bunniesPickedUp.contains((i-1)))))
+            {
+                minimumVal = bellmanVertexArr[i];
+                rowChosen = i;
+            }
+        }
+        return rowChosen;
+    }
     private static int[] BellmanFordWithAGivenStart(int[][] times, int start) {
         int[] bellmanVertexArr = new int[times.length];
         Arrays.fill(bellmanVertexArr, Integer.MAX_VALUE);
-        bellmanVertexArr[0] = start;
+        bellmanVertexArr[start] = 0;
         boolean changesWereMade = true;
         while(changesWereMade)
         {
@@ -41,7 +86,6 @@ public class Solution
                             bellmanVertexArr[j] = times[i][j];
                             wasThereAChange = true;
                         }
-
                     }
                 }
             }
