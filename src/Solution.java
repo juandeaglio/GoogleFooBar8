@@ -19,16 +19,41 @@ public class Solution
         {
             bunniesResult = new ArrayList<>();
             int rowWithMinimumCycleCosts = FindMinimumCycleRow(times);
-            while(timeLimit-times[rowWithMinimumCycleCosts][times.length-1] > 0)
+            if(rowWithMinimumCycleCosts >= 0)
             {
-                for(int i = 0; i < times.length; i++)
+                while (timeLimit - times[rowWithMinimumCycleCosts][times.length - 1] >= 0)
                 {
-                    if(i != rowWithMinimumCycleCosts && i != 0 && i != times.length-1)
+                    for (int i = 0; i < times.length; i++)
                     {
-                        timeLimit -= times[rowWithMinimumCycleCosts][i] + times[i][rowWithMinimumCycleCosts];
-                        bunniesResult.add(i);
+                        if (i != rowWithMinimumCycleCosts && i != 0 && i != times.length - 1)
+                        {
+                            timeLimit -= times[rowWithMinimumCycleCosts][i] + times[i][rowWithMinimumCycleCosts];
+                            bunniesResult.add(i);
+                        }
                     }
                 }
+            }
+            else
+            {
+                int currentRow = 0;
+                while (timeLimit - times[currentRow][times.length - 1] >= 0)
+                {
+                    int cheapestRow = 0;
+                    int cheapest = Integer.MAX_VALUE;
+                    for(int i = 0; i < times[currentRow].length; i++)
+                    {
+                        if(times[currentRow][i] < cheapest && !bunniesResult.contains(i) && i != 0 && i != times[0].length-1)
+                        {
+                            cheapest = times[currentRow][i];
+                            cheapestRow = i;
+                            bunniesResult.add(i);
+                        }
+                    }
+                    timeLimit -= times[currentRow][cheapestRow];
+                    currentRow = cheapestRow;
+                }
+                if(bunniesResult.size() != 0)
+                    bunniesResult.remove(bunniesResult.size()-1);
             }
 
         }
@@ -40,8 +65,14 @@ public class Solution
 
     private static int FindMinimumCycleRow(int[][] graph)
     {
+        int rowToReturn = -1;
         int row = 0;
-        int maximum = Integer.MAX_VALUE;
+        int maximum = 0;
+        for(int j = 0; j < graph[0].length; j++)
+        {
+            maximum += graph[0][j] + graph[j][0];
+        }
+        int sum = 0;
         for(int i = 0; i < graph.length; i++)
         {
             int sumOfCycles = 0;
@@ -49,13 +80,15 @@ public class Solution
             {
                 sumOfCycles += graph[i][j] + graph[j][i];
             }
-            if(sumOfCycles < maximum)
+            if(sumOfCycles <= maximum)
             {
-                maximum = sumOfCycles;
+                sum = sumOfCycles;
                 row = i;
             }
         }
-        return row;
+        if(sum != maximum)
+            rowToReturn = row;
+        return rowToReturn;
     }
 
     public static int FindCycleIfExists(int[][] graph)
