@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Solution
 {
@@ -9,7 +6,7 @@ public class Solution
     {
         ArrayList<Integer> bunniesResult = null;
         int timeLimit = times_limit;
-        if(IsCycleInfinite(times, FindCycleIfExists(times)))
+        if(IsCycleInfinite(times, FindCycleIfExists(times))) // TODO: will not work if the cycle is not reachable w/ the timelimit
         {
             bunniesResult = new ArrayList<>();
             for(int i = 0; i < times.length-2; i++)
@@ -17,50 +14,40 @@ public class Solution
         }
         else
         {
-            bunniesResult = new ArrayList<>();
-            int rowWithMinimumCycleCosts = FindMinimumCycleRow(times);
-            if(rowWithMinimumCycleCosts >= 0)
-            {
-                while (timeLimit - times[rowWithMinimumCycleCosts][times.length - 1] >= 0)
-                {
-                    for (int i = 0; i < times.length; i++)
-                    {
-                        if (i != rowWithMinimumCycleCosts && i != 0 && i != times.length - 1)
-                        {
-                            timeLimit -= times[rowWithMinimumCycleCosts][i] + times[i][rowWithMinimumCycleCosts];
-                            bunniesResult.add(i);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                int currentRow = 0;
-                while (timeLimit - times[currentRow][times.length - 1] >= 0)
-                {
-                    int cheapestRow = 0;
-                    int cheapest = Integer.MAX_VALUE;
-                    for(int i = 0; i < times[currentRow].length; i++)
-                    {
-                        if(times[currentRow][i] < cheapest && !bunniesResult.contains(i) && i != 0 && i != times[0].length-1)
-                        {
-                            cheapest = times[currentRow][i];
-                            cheapestRow = i;
-                            bunniesResult.add(i);
-                        }
-                    }
-                    timeLimit -= times[currentRow][cheapestRow];
-                    currentRow = cheapestRow;
-                }
-                if(bunniesResult.size() != 0)
-                    bunniesResult.remove(bunniesResult.size()-1);
-            }
-
+            int[] bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
         }
         int[] result = null;
-        if(bunniesResult.size() > 1)
+        if(bunniesResult != null && bunniesResult.size() > 1)
             result = bunniesResult.stream().mapToInt(i->i).toArray();
         return result;
+    }
+
+    private static int[] BellmanFordWithAGivenStart(int[][] times, int start) {
+        int[] bellmanVertexArr = new int[times.length];
+        Arrays.fill(bellmanVertexArr, Integer.MAX_VALUE);
+        bellmanVertexArr[0] = start;
+        boolean changesWereMade = true;
+        while(changesWereMade)
+        {
+            boolean wasThereAChange = false;
+            for(int i = 0; i < bellmanVertexArr.length; i++)
+            {
+                if(bellmanVertexArr[i] != Integer.MAX_VALUE)
+                {
+                    for(int j = 0; j < times[i].length; j++)
+                    {
+                        if(j != i && times[i][j] < bellmanVertexArr[j])
+                        {
+                            bellmanVertexArr[j] = times[i][j];
+                            wasThereAChange = true;
+                        }
+
+                    }
+                }
+            }
+            changesWereMade = wasThereAChange;
+        }
+        return bellmanVertexArr;
     }
 
     private static int FindMinimumCycleRow(int[][] graph)
