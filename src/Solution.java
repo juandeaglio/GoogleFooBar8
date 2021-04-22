@@ -19,11 +19,17 @@ public class Solution
             int[] bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
             while(timeLimit - bellmanVertexArr[minimumCostVertexChosen] >= bellmanVertexArrFuture[bellmanVertexArr.length-1])
             {
+                int[][] bellmanGraphArr = new int[times.length][times.length];
+                //TODO: re-write path decision to consider all possible paths and take the min totalCost that is created within two moves (maybe extend it to n amount of moves)
                 timeLimit -= bellmanVertexArr[minimumCostVertexChosen];
                 if(minimumCostVertexChosen > 0 && minimumCostVertexChosen < bellmanVertexArr.length-1 && !bunniesResult.contains(minimumCostVertexChosen-1))
                     bunniesResult.add(minimumCostVertexChosen-1);
-                bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                minimumCostVertexChosen = GetMinimumOf(bellmanVertexArr, minimumCostVertexChosen, bunniesResult);
+                for(int i = 0; i < bellmanVertexArr.length; i++)
+                {
+                    bellmanGraphArr[i] = BellmanFordWithAGivenStart(times, i);
+                }
+
+                minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanGraphArr, minimumCostVertexChosen, bunniesResult);
                 bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
             }
 
@@ -51,17 +57,26 @@ public class Solution
         }
         return rowChosen;
     }
-    private static int GetMinimumOfWithFuture(int[] bellmanVertexArr, int[] future, int excluding, ArrayList<Integer> bunniesPickedUp)
+    private static int GetMinimumExcludingCurrent(int[][] bellmanVertexGraph, int excluding, ArrayList<Integer> bunniesPickedUp)
     {
         int rowChosen = -1;
         int minimumVal = Integer.MAX_VALUE;
-        for(int i = 0; i < bellmanVertexArr.length; i++)
+        for(int i = 0; i < bellmanVertexGraph.length; i++)
         {
-            if((i != excluding && bellmanVertexArr[i] < minimumVal) ||
-                    (bellmanVertexArr[i] == minimumVal &&
-                            (rowChosen == 0 && !bunniesPickedUp.contains((i-1)))))
+            int minimumValInRow = Integer.MAX_VALUE;
+            if(i != excluding)
             {
-                minimumVal = bellmanVertexArr[i];
+                for(int j = 0; j < bellmanVertexGraph[i].length; j++)
+                {
+                    if(bellmanVertexGraph[i][j] != 0)
+                        minimumValInRow = Math.min(minimumValInRow, bellmanVertexGraph[i][j]);
+                }
+            }
+            if((minimumValInRow < minimumVal)
+                    || (minimumValInRow == minimumVal && !bunniesPickedUp.contains(i-1) && bunniesPickedUp.contains(rowChosen-1)
+                    || (rowChosen == 0 && !bunniesPickedUp.contains(i-1))))
+            {
+                minimumVal = minimumValInRow;
                 rowChosen = i;
             }
         }
