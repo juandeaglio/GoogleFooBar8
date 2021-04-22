@@ -30,24 +30,38 @@ public class SolutionUnitTests
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
-    /*
     @Test
-    public void ShouldReturnSomeBunnies()
+    public void ShouldReturnAllBunnies()
     {
         int[][]graph = {
                 {0, 1, 1, 1, 1, 2, 2},
                 {1, 0, 1, 1, 1, 1, 1},
-                {1, 1, 0, 1, 1, 1,-1},
-                {1, -4, 1, 0, 1, 1, 1},
-                {1, 1, 1, 1, 0, 1, 1},
-                {1, 1, 1, 1, 1, 0, 1},
+                {1, 1, 0, 1, 1, 1, 3},
+                {1, -3, 1, 0, 1, 1, 1},
+                {1, 1, 1, 1, 0, 1, 2},
+                {1, 1, 1, 1, 1, 0, 2},
                 {1, 1, 1, 1, 1, 1, 0},};
         int timeLimit = 1;
-        int[] expectedResult = {1,2,3,4};
+        int[] expectedResult = {0,1,2,3,4};
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
-    */
+    @Test
+    public void ShouldReturnAll()
+    {
+        int[][]graph = {
+                {0, 1, 1, 4, 1, 2, 2},
+                {1, 0, 1, 3, 1, 1, 1}, //-
+                {1, 1, 0, 2, 1, 1, 3}, //-
+                {1, -3, 1, 0, 1, 1, 1}, //-
+                {1, 1, 1, 4, 0, 1, 1}, //-
+                {1, 4, 1, 5, 1, 0, 2}, //-
+                {1, 1, 1, 2, 1, 1, 0},};
+        int timeLimit = 3;
+        int[] expectedResult = {0,1,2,3,4};
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertArrayEquals(expectedResult, actualResult);
+    }
     @Test
     public void ShouldReturnTwoBunniesWithCycles()
     {
