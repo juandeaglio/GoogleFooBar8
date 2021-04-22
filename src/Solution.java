@@ -6,7 +6,7 @@ public class Solution
     {
         ArrayList<Integer> bunniesResult = new ArrayList<>();
         int timeLimit = times_limit;
-        if(IsCycleInfinite(times, FindCycleIfExists(times))) // TODO: will not work if the cycle is not reachable w/ the timelimit
+        if(FindCycleIfExists(times)) // TODO: will not work if the cycle is not reachable w/ the timelimit
         {
             bunniesResult = new ArrayList<>();
             for(int i = 0; i < times.length-2; i++)
@@ -168,24 +168,17 @@ public class Solution
         return rowToReturn;
     }
 
-    public static int FindCycleIfExists(int[][] graph)
+    public static boolean  FindCycleIfExists(int[][] graph)
     {
         int cycleRow = -1;
         for(int i = 0; i < graph.length && cycleRow == -1; i++)
         {
-            if(graph[i][i] != 0)
+            if(graph[i][i] < 0)
                 cycleRow = i;
         }
-        return cycleRow;
+        return cycleRow != -1;
     }
 
-    public static boolean IsCycleInfinite(int[][] graph, int row)
-    {
-        if(row == -1)
-            return  false;
-        else
-            return graph[row][row] < 0 ;
-    }
     static class Graph
     {
         private final Map<Integer, Vertex> adjVertices;

@@ -30,6 +30,7 @@ public class SolutionUnitTests
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
+    /*
     @Test
     public void ShouldReturnSomeBunnies()
     {
@@ -46,6 +47,7 @@ public class SolutionUnitTests
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
+    */
     @Test
     public void ShouldReturnTwoBunniesWithCycles()
     {
@@ -70,20 +72,7 @@ public class SolutionUnitTests
                 {1, 1, 0, 1, 1},
                 {1, 1, 1, 0, 1},
                 {1, 1, 1, 1, -1}};
-        int expectedResult = graph.length-1;
-        int actualResult = Solution.FindCycleIfExists(graph);
-        Assertions.assertEquals(expectedResult, actualResult);
-    }
-    @Test
-    public void ShouldFindAnInfiniteCycle()
-    {
-        int[][]graph = {
-                {0, 1, 1, 1, 1},
-                {1, 0, 1, 1, 1},
-                {1, 1, 0, 1, 1},
-                {1, 1, 1, 0, 1},
-                {1, 1, 1, 1, -1}};
-        boolean actualResult = Solution.IsCycleInfinite(graph, Solution.FindCycleIfExists(graph));
+        boolean actualResult = Solution.FindCycleIfExists(graph);
         Assertions.assertTrue(actualResult);
     }
     @Test
@@ -99,6 +88,18 @@ public class SolutionUnitTests
         int[] expectedResult = {0,1,2};
         int[] actualResult = Solution.RescueTheBunnies(graph,timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
+    }
+    @Test
+    public void ShouldFindANegativeCycleBetweenTwoVertices()
+    {
+        int[][]graph = {
+                {0, 1, 1, 1, 1},
+                {1, 0, 1, 1, 1},
+                {1, 1, 0, -1, 1},
+                {1, 1, -1, 0, 1},
+                {1, 1, 1, 1, 1}};
+        boolean actualResult = Solution.FindCycleIfExists(graph);
+        Assertions.assertTrue(actualResult);
     }
     @Test
     public void ShouldReturnAllPossibleBunnies()
