@@ -1,4 +1,7 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Solution
 {
@@ -32,8 +35,6 @@ public class Solution
                     if(pathBeingEvaluated.nextEdge != null)
                         pathBeingEvaluated = pathBeingEvaluated.nextEdge;
                     bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                    minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, origin, bunniesResult);
-                    bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
                 }
                     timeLimit -= times[origin][pathBeingEvaluated.currentVertex];
                     if (pathBeingEvaluated.currentVertex > 0 && pathBeingEvaluated.currentVertex < times.length - 1 && !bunniesResult.contains(pathBeingEvaluated.currentVertex-1))
