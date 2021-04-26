@@ -7,46 +7,49 @@ public class Solution
 {
     public static int[] RescueTheBunnies(int[][] times, int times_limit)
     {
+        //TODO: handle null case
         ArrayList<Integer> bunniesResult = new ArrayList<>();
         int timeLimit = times_limit;
-        if(FindCycleIfExists(times))
-        {
-            bunniesResult = new ArrayList<>();
-            for(int i = 0; i < times.length-2; i++)
-                bunniesResult.add(i);
-        }
-        else
-        {
-            HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
-            // TODO: Once we find the bellman (we might not even need to find bellman from all starting points... (or perhaps until we reach the minimum of the bellman) we use shortest path of least cost to navigate to the point. After we navigate, we can use bellman to find remaining vertices
-            // picking the next cheapest one. Can rework bellmanVertexGraph into just one array (i dont think we need to calculate bellman for every single node as a starting point, is there a point?)
-            // for test case AllBunnies should go 0 -> 4 -> 5 -> 3 -> 1 -> 2 -> terminates (all nodes found)
-            int minimumCostVertexChosen = 0;
-            int origin = 0;
-            HashMap<Integer, Path> bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-            Path pathBeingEvaluated = null;
-            int pathNextChoice = 0;
-            while(timeLimit - pathNextChoice > bellmanVertexArrFuture.get(times.length-1).cost || bellmanVertexArrFuture.get(times.length-1).cost == 0)
+        if(times.length > 2) {
+            if (FindCycleIfExists(times))
             {
-                //TODO: re-write path decision to consider all possible paths and take the min totalCost that is created within two moves (maybe extend it to n amount of moves)
-                if(pathBeingEvaluated == null)
+                bunniesResult = new ArrayList<>();
+                for (int i = 0; i < times.length - 2; i++)
+                    bunniesResult.add(i);
+            }
+            else
+            {
+                HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
+                int minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, 0, bunniesResult);
+                int origin = 0;
+                HashMap<Integer, Path> bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+                Path pathBeingEvaluated = null;
+                int pathNextChoice = 0;
+                while ((timeLimit - pathNextChoice >= bellmanVertexArrFuture.get(times.length - 1).cost || bellmanVertexArrFuture.get(times.length - 1).cost == 0 ) && origin != minimumCostVertexChosen & minimumCostVertexChosen != -1)
                 {
-                    pathBeingEvaluated = bellmanVertexArr.get(minimumCostVertexChosen);
-                    if(pathBeingEvaluated.nextEdge != null)
+                    if (pathBeingEvaluated == null)
+                    {
+                        pathBeingEvaluated = bellmanVertexArr.get(minimumCostVertexChosen);
+                        if (pathBeingEvaluated.nextEdge != null)
+                            pathBeingEvaluated = pathBeingEvaluated.nextEdge;
+                        bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
+                    }
+                    else
+                    {
+                        timeLimit -= times[origin][pathBeingEvaluated.currentVertex];
+                        if (pathBeingEvaluated.currentVertex > 0 && pathBeingEvaluated.currentVertex < times.length - 1 && !bunniesResult.contains(pathBeingEvaluated.currentVertex - 1))
+                            bunniesResult.add(pathBeingEvaluated.currentVertex - 1);
+                        origin = pathBeingEvaluated.currentVertex;
+                        minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, origin, bunniesResult);
+                        if(pathBeingEvaluated.nextEdge != null)
+                            bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, pathBeingEvaluated.nextEdge.currentVertex);
                         pathBeingEvaluated = pathBeingEvaluated.nextEdge;
-                    bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                }
-                    timeLimit -= times[origin][pathBeingEvaluated.currentVertex];
-                    if (pathBeingEvaluated.currentVertex > 0 && pathBeingEvaluated.currentVertex < times.length - 1 && !bunniesResult.contains(pathBeingEvaluated.currentVertex-1))
-                        bunniesResult.add(pathBeingEvaluated.currentVertex-1);
-                    origin = pathBeingEvaluated.currentVertex;
-                    minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, origin, bunniesResult);
-                    bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                    pathBeingEvaluated = pathBeingEvaluated.nextEdge;
-                    if(pathBeingEvaluated != null)
+                    }
+                    if (pathBeingEvaluated != null)
                         pathNextChoice = pathBeingEvaluated.cost;
                     else
                         pathNextChoice = 0;
+                }
             }
         }
         int[] result = null;
@@ -61,33 +64,45 @@ public class Solution
     private static int GetMinimumExcludingCurrent(HashMap<Integer, Path> bellmanVertexArr, int excluding, ArrayList<Integer> bunniesPickedUp)
     {
         int rowChosen = -1;
-        int minimumVal = Integer.MAX_VALUE;
+        int maxEdges = 0;
+        int minCost = Integer.MAX_VALUE;
+        int newTouched = 0;
         for(int i = 0; i < bellmanVertexArr.size(); i++)
         {
-            int minimumValInRow = Integer.MAX_VALUE;
-            if(i != excluding)
+            int touched = AmntOfNewVerticesTouched(bunniesPickedUp, bellmanVertexArr.get(i), bellmanVertexArr.size());
+            if(i != excluding && touched >= newTouched && touched != 0)
             {
-                if(bellmanVertexArr.get(i).cost != Integer.MAX_VALUE)
+                if(bellmanVertexArr.get(i).edgesTotal > maxEdges)
                 {
-                    minimumValInRow = Math.min(minimumValInRow, bellmanVertexArr.get(i).cost);
+                    maxEdges = bellmanVertexArr.get(i).edgesTotal;
+                    rowChosen = i;
+                    minCost = bellmanVertexArr.get(i).cost;
+                    newTouched = touched;
                 }
-            }
-            if(minimumValInRow < minimumVal || (rowChosen == 0 && !bunniesPickedUp.contains(i-1)))
-            {
-                minimumVal = minimumValInRow;
-                rowChosen = i;
-            }
-            else if((minimumValInRow == minimumVal && !bunniesPickedUp.contains(i-1) && bunniesPickedUp.contains(rowChosen-1)))
-            {
-                rowChosen = i;
-            }
-            else if(minimumValInRow >= minimumVal && (rowChosen == 0 && bunniesPickedUp.contains(rowChosen-1)))
-            {
-                rowChosen = i;
+                else if(bellmanVertexArr.get(i).edgesTotal == maxEdges && bellmanVertexArr.get(i).cost < minCost)
+                {
+                    minCost = bellmanVertexArr.get(i).cost;
+                    rowChosen = i;
+                    newTouched = touched;
+                }
             }
         }
         return rowChosen;
     }
+
+    private static int AmntOfNewVerticesTouched(ArrayList<Integer> bunniesPickedUp, Path path, int length)
+    {
+        Path currentPath = path;
+        int amnt = 0;
+        while(currentPath != null)
+        {
+            if(!bunniesPickedUp.contains(currentPath.currentVertex-1) && currentPath.currentVertex != 0 && currentPath.currentVertex != length-1)
+                amnt++;
+            currentPath = currentPath.nextEdge;
+        }
+        return amnt;
+    }
+
     private static HashMap<Integer,Path> BellmanFordWithAGivenStart(int[][] times, int start) {
         HashMap<Integer,Path> bellmanVertexArr = new HashMap<>();
         for(int i = 0; i< times[0].length; i++)
@@ -106,7 +121,7 @@ public class Solution
                     for(int j = 0; j < times[i].length; j++)
                     {
                         //TODO: fix bug with edges not being connected correctly.
-                        if(j != i && (times[i][j] + bellmanVertexArr.get(i).cost < bellmanVertexArr.get(j).cost))
+                        if(j != i && ((times[i][j] + bellmanVertexArr.get(i).cost < bellmanVertexArr.get(j).cost) ))
                         {
                             Path newPath = bellmanVertexArr.get(i).CreateCopy();
                             newPath.cost = newPath.cost + times[i][j];

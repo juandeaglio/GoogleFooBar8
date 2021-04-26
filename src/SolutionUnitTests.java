@@ -51,9 +51,9 @@ public class SolutionUnitTests
     {
         int[][]graph = {
                 {0, 1, 1, 4, 1, 2, 2},
-                {1, 0, 1, 3, 1, 1, 1},//-
-                {1, 1, 0, 2, 1, 1, 3},//-
-                {1, -3, 1, 0, 1, 1, 1},//-
+                {1, 0, 1, 3, 1, 1, 1},
+                {1, 1, 0, 2, 1, 1, 3},
+                {1, -3, 1, 0, 1, 1, 1},
                 {1, 1, 1, 4, 0, 1, 1},
                 {1, 4, 1, 5, 1, 0, 2},
                 {1, 1, 1, 2, 1, 1, 0},};
@@ -142,5 +142,31 @@ public class SolutionUnitTests
         int[] expectedResult = {0,1,2};
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
+    }
+    @Test
+    public void ShouldReturnThreeBunnies()
+    {
+        int[][]graph = {
+                {0, 1, 1, 4, 1, 2, 2},
+                {1, 0, 1, 3, 1, 1, 1},
+                {1, 1, 0, 2, 1, 1, 3}, //-
+                {1, -1, 1, 0, 1, 1, 1}, //-
+                {1, 1, 1, 4, 0, 1, 1},
+                {1, 4, 1, 5, 1, 0, 2},
+                {1, 1, 1, 2, 1, 1, 0},};
+        int timeLimit = 3;
+        int[] expectedResult = {0,1,2};
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertArrayEquals(expectedResult, actualResult);
+    }
+    @Test
+    public void ShouldReturnNullOrNothing()
+    {
+        int[][]graph = {
+                {0, 1,},
+                {1, 0}};
+        int timeLimit = 3;
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertNull(actualResult);
     }
 }
