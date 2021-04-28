@@ -47,7 +47,7 @@ public class SolutionUnitTests
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
     @Test
-    public void ShouldReturnAll()
+    public void ShouldReturnAll2Then3_1_5_4_6()
     {
         int[][]graph = {
                 {0, 1, 1, 4, 1, 2, 2},
@@ -90,7 +90,7 @@ public class SolutionUnitTests
         Assertions.assertTrue(actualResult);
     }
     @Test
-    public void ShouldFindInfiniteCycleThatIsntImmediatelyReachable()
+    public void ShouldReturnThreeBunniesOnBasicGraph()
     {
         int[][]graph = {
                 {0, 1, 1, 1, 1},
@@ -133,11 +133,11 @@ public class SolutionUnitTests
     public void ShouldReturnAllPossibleBunnies()
     {
         int[][]graph = {
-                {0, 1, 1, 1, 1},
+                {-1, 1, 1, 1, 1},
                 {1, 0, 1, 1, 1},
                 {1, 1, 0, 1, 1},
                 {1, 1, 1, 0, 1},
-                {1, 1, 1, 1, -1}};
+                {1, 1, 1, 1, 0}};
         int timeLimit = -100;
         int[] expectedResult = {0,1,2};
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
@@ -168,5 +168,21 @@ public class SolutionUnitTests
         int timeLimit = 3;
         int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
         Assertions.assertNull(actualResult);
+    }
+    @Test
+    public void ShouldReturnOnlyOneBunny()
+    {
+        int[][]graph = {
+                {0, 1, 1, 4, 1, 2, 2},
+                {1, 0, 1, 3, 1, 1, 1},
+                {1, 1, 0, 2, 1, 1, 3},
+                {1, -1, 1, 0, 1, 1, 1},
+                {1, 1, 1, 4, 0, 1, 1},
+                {1, 4, 1, 5, 1, 0, 2},
+                {1, 1, 1, 2, 1, 1, 0},};
+        int timeLimit = 2;
+        int[]expectedResult = {0};
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertArrayEquals(expectedResult,actualResult);
     }
 }
