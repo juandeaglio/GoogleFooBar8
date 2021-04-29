@@ -76,8 +76,9 @@ public class Solution
             max = Math.max(max, paths[0][i])+1;
         Path temp = null;
         Path bestPath = null;
+        HashSet<HashSet<Integer>> attemptedVertices = new HashSet<>();
         int verticesExitedWith = 0;
-        while ((!pathTaken.isEmpty() || temp != null))
+        while ((!pathTaken.isEmpty() || temp != null) && pathTaken.size() < 100)
         {
             if(pathTaken.peek() != null && pathTaken.peek().edgesTotal > max)
             {
@@ -94,7 +95,7 @@ public class Solution
                     {
                         int current = getLastVertexOf(temp);
                         HashMap<Integer,Path> availablePaths = BellmanFordWithAGivenStart(times,current);
-                        if ((i != current ) && !currentVisited.contains(i))
+                        if (( (i != current && !currentVisited.contains(i) ) || (i == times.length-1)))
                         {
                             HashSet<Integer> visited = new HashSet<>(currentVisited);
                             Path pathContiuation = availablePaths.get(i).CreateCopy();
@@ -116,6 +117,7 @@ public class Solution
                             }
                             pathTaken.add(newPath);
                             visitedQueue.add(visited);
+                            attemptedVertices.add(visited);
                             if (getLastVertexOf(newPath) == times.length-1 && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
                             {
                                 bestPath = newPath;
@@ -129,7 +131,7 @@ public class Solution
 
         int[] result = null;
         HashSet<Integer> bunniesFound = new HashSet<>();
-        if(bestPath != null && bestPath.edgesTotal > 2)
+        if(bestPath != null && bestPath.edgesTotal > 1)
         {
             int count = 0;
             while(bestPath != null)
@@ -155,7 +157,7 @@ public class Solution
     {
         HashSet<Integer> bunniesFound = new HashSet<>();
         Path path1 = newPath;
-        if(newPath != null && newPath.edgesTotal > 2)
+        if(newPath != null && newPath.edgesTotal > 1)
         {
             while (path1 != null)
             {
