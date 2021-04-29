@@ -6,7 +6,7 @@ public class Solution
     {
         int[][] paths = new int[times.length][times.length];
         int[][] floydWarshallGraph = convertToFloydWarshall(times, paths);
-
+        HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 3);
         int[] result = null;
         if(times.length > 2)
         {
@@ -18,9 +18,7 @@ public class Solution
             }
             else
             {
-                //TODO: case 2_3_1_5_4_6 does not find multiple edges for 3/1
-                HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(floydWarshallGraph, 0);
-                result = DFSFloydWarshall(floydWarshallGraph, paths, times_limit, times);
+                //result = BFSFloydWarshall(floydWarshallGraph, paths, times_limit, times);
             }
         }
         return result;
@@ -39,15 +37,15 @@ public class Solution
         int[][] distances = new int[times.length][times.length];
         for(int i = 0; i < distances.length; i++)
         {
+            distances[i][i] = 0;
+        }
+        for(int i = 0; i < distances.length; i++)
+        {
             Arrays.fill(distances[i], Integer.MAX_VALUE);
             for(int j = 0; j < distances.length; j++)
             {
                 distances[i][j] = times[i][j];
             }
-        }
-        for(int i = 0; i < distances.length; i++)
-        {
-            distances[i][i] = 0;
         }
         for(int i = 0; i < distances.length; i++)
         {
@@ -64,7 +62,7 @@ public class Solution
         }
         return distances;
     }
-    private static int[] DFSFloydWarshall(int[][]floydWarshallGraph, int[][] paths, int timeLimit, int[][] times)
+    private static int[] BFSFloydWarshall(int[][]floydWarshallGraph, int[][] paths, int timeLimit, int[][] times)
     {
         Queue<HashMap<Integer,HashSet<Integer>>> visitedQueue = new ArrayDeque<>();
         Queue<Path> pathTaken = new ArrayDeque<>();
@@ -80,6 +78,7 @@ public class Solution
             max = Math.max(max, paths[0][i])+1;
         Path temp = null;
         Path bestPath = null;
+        int verticesExitedWith = 0;
         while ((!pathTaken.isEmpty() || temp != null) && pathTaken.peek().edgesTotal <= max)
         {
             temp = pathTaken.poll();
@@ -107,11 +106,10 @@ public class Solution
                         visited.get(current).add(i);
                         pathTaken.add(newPath);
                         visitedQueue.add(visited);
-                        if (EndsAtTerminal(newPath, floydWarshallGraph.length) && ((newPath.cost <= timeLimit && edgesUsed < newPath.edgesTotal) ||
-                                 ( newPath.cost == timeLimit && edgesUsed == newPath.edgesTotal )))
+                        if (EndsAtTerminal(newPath, floydWarshallGraph.length) && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
                         {
                             bestPath = newPath;
-                            edgesUsed = newPath.edgesTotal;
+                            verticesExitedWith = verticesTouched(bestPath,times.length);
                         }
                     }
                 }
@@ -134,7 +132,7 @@ public class Solution
             result = new int[bunniesFound.size()];
             for (Integer vertex: bunniesFound)
             {
-                result[0] = vertex;
+                result[count] = vertex;
                 count++;
             }
             Arrays.sort(result);
@@ -357,20 +355,19 @@ public class Solution
             bellmanVertexArr.put(i, new Path(i, Integer.MAX_VALUE,null));
         }
         bellmanVertexArr.put(start,  new Path(start,0,null));
-        boolean changesWereMade = true;
-        while(changesWereMade)
+        int timesDone = 0;
+        while(timesDone < times[0].length )
         {
-            boolean wasThereAChange = false;
             for(int i = 0; i < times.length; i++)
             {
                 if(bellmanVertexArr.get(i).cost != Integer.MAX_VALUE)
                 {
                     for(int j = 0; j < times[i].length; j++)
                     {
-                        //TODO: fix bug with edges not being connected correctly.
-                        if(j != i && ((times[i][j] + bellmanVertexArr.get(i).cost < bellmanVertexArr.get(j).cost) ))
+                        if(j != i && ((bellmanVertexArr.get(i).cost + times[i][j] < bellmanVertexArr.get(j).cost) || ((bellmanVertexArr.get(i).cost + times[i][j] == bellmanVertexArr.get(j).cost) && IsNewAndNotCyclical(bellmanVertexArr.get(i), times.length))))
                         {
-                            Path newPath = bellmanVertexArr.get(i).CreateCopy();
+                            Path newPath;
+                            newPath = bellmanVertexArr.get(i).CreateCopy();
                             newPath.cost = newPath.cost + times[i][j];
                             newPath.edgesTotal++;
                             Path currentEdge = newPath;
@@ -380,17 +377,102 @@ public class Solution
                                 currentEdge = currentEdge.nextEdge;
                                 currentEdge.edgesTotal++;
                             }
-                            currentEdge.nextEdge = new Path(j, times[i][j], null);
+                            currentEdge.nextEdge = new Path(j, 0, null);
                             bellmanVertexArr.put(j, newPath);
-                            wasThereAChange = true;
                         }
                     }
                 }
             }
-            changesWereMade = wasThereAChange;
+            timesDone++;
         }
         return bellmanVertexArr;
     }
+
+    private static boolean IsNewAndNotCyclical(Path currentPath, int maxLen)
+    {
+        boolean[] verticesVisited = new boolean[maxLen];
+        boolean[] compareVertices = new boolean[maxLen];
+        boolean cycleDetected = false;
+        boolean cycleEnded = false;
+        int count = 0;
+        int start = 0;
+        int iterations = 0;
+        //if(verticesTouched(currentPath, maxLen) + IsVertexABunny(currentPath, currentJ, maxLen) > verticesTouched(currentPath, maxLen))
+        Path tempPath = currentPath;
+
+        while(tempPath != null && !cycleEnded)
+        {
+            if(verticesVisited[tempPath.currentVertex])
+            {
+                if(!cycleDetected)
+                {
+                    start = iterations;
+                    cycleDetected = true;
+                }
+                count++;
+            }
+            else
+            {
+                verticesVisited[tempPath.currentVertex] = true;
+                if(cycleDetected)
+                {
+                    cycleEnded = true;
+                    cycleDetected = false;
+                }
+            }
+            tempPath = tempPath.nextEdge;
+            iterations++;
+        }
+        tempPath = currentPath;
+        while(tempPath != null && !cycleDetected)
+        {
+            if(compareVertices[tempPath.currentVertex])
+            {
+                cycleDetected = true;
+            }
+            tempPath = tempPath.nextEdge;
+        }
+        boolean sameOrIsSubsetOf = true;
+        for(int i = 0; i < compareVertices.length && sameOrIsSubsetOf; i++)
+        {
+            if (compareVertices[i] != verticesVisited[i])
+                sameOrIsSubsetOf = false;
+        }
+        return sameOrIsSubsetOf;
+    }
+
+    private static int IsVertexABunny(Path pathTaken , int j, int length)
+    {
+        Path tempPath = pathTaken;
+        boolean contains = false;
+        while(tempPath != null)
+        {
+            if (tempPath.currentVertex == j) {
+                contains = true;
+                break;
+            }
+            tempPath = tempPath.nextEdge;
+        }
+        if (j != 0 && j != length-1 && !contains)
+            return 1;
+        return 0;
+    }
+
+    private static boolean DoesPathCycle(int[][] floydWarGraph, Path path, int toAdd)
+    {
+        int totalCost = path.cost;
+        Path tempPath = path;
+        HashSet<Integer> verticesVisited = new HashSet<>();
+        while(tempPath != null)
+        {
+            if(verticesVisited.contains(tempPath.currentVertex))
+                return true;
+            verticesVisited.add(tempPath.currentVertex);
+            tempPath = tempPath.nextEdge;
+        }
+        return verticesVisited.contains(toAdd);
+    }
+
     static class Path
     {
         int currentVertex;
