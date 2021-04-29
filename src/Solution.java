@@ -6,7 +6,7 @@ public class Solution
     {
         int[][] paths = new int[times.length][times.length];
         int[][] floydWarshallGraph = convertToFloydWarshall(times, paths);
-        HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 3);
+        //HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
         int[] result = null;
         if(times.length > 2)
         {
@@ -18,7 +18,7 @@ public class Solution
             }
             else
             {
-                //result = BFSFloydWarshall(floydWarshallGraph, paths, times_limit, times);
+                result = BFSFloydWarshall(floydWarshallGraph, paths, times_limit, times);
             }
         }
         return result;
@@ -64,52 +64,63 @@ public class Solution
     }
     private static int[] BFSFloydWarshall(int[][]floydWarshallGraph, int[][] paths, int timeLimit, int[][] times)
     {
-        Queue<HashMap<Integer,HashSet<Integer>>> visitedQueue = new ArrayDeque<>();
+        Queue<HashSet<Integer>> visitedQueue = new ArrayDeque<>();
         Queue<Path> pathTaken = new ArrayDeque<>();
         pathTaken.add(new Path(0, 0, null));
-        visitedQueue.add(new HashMap<Integer,HashSet<Integer>>());
-        HashMap<Integer, HashSet<Integer>> visitedTemp = visitedQueue.poll();
-        visitedTemp.put(0, new HashSet<>());
+        visitedQueue.add(new HashSet<>());
+        HashSet<Integer> visitedTemp = visitedQueue.poll();
+        visitedTemp.add(0);
         visitedQueue.add(visitedTemp);
-        int edgesUsed = 0;
-        int maxVerticesVisited = 0;
         int max = 0;
         for(int i = 0; i < floydWarshallGraph.length; i++)
             max = Math.max(max, paths[0][i])+1;
         Path temp = null;
         Path bestPath = null;
         int verticesExitedWith = 0;
-        while ((!pathTaken.isEmpty() || temp != null) && pathTaken.peek().edgesTotal <= max)
+        while ((!pathTaken.isEmpty() || temp != null))
         {
-            temp = pathTaken.poll();
-            HashMap<Integer, HashSet<Integer>> currentVisited = visitedQueue.poll();
-            if (temp != null && currentVisited != null)
+            if(pathTaken.peek() != null && pathTaken.peek().edgesTotal > max)
             {
-                for (int i = 0; i < floydWarshallGraph.length; i++)
+                pathTaken.poll();
+                visitedQueue.poll();
+            }
+            else
+            {
+                temp = pathTaken.poll();
+                HashSet<Integer> currentVisited = visitedQueue.poll();
+                if (temp != null && currentVisited != null)
                 {
-                    int current = getLastVertexOf(temp);
-                    currentVisited.computeIfAbsent(current, k -> new HashSet<>());
-                    if (i != current && !currentVisited.get(current).contains(i))
+                    for (int i = 0; i < floydWarshallGraph.length; i++)
                     {
-                        HashMap<Integer, HashSet<Integer>> visited = CopyHashMap((currentVisited));
-                        Path newPath = temp.CreateCopy();
-                        newPath.edgesTotal++;
-                        newPath.cost += times[current][i];
-                        Path currentPath = newPath;
-                        while (currentPath.nextEdge != null)
+                        int current = getLastVertexOf(temp);
+                        HashMap<Integer,Path> availablePaths = BellmanFordWithAGivenStart(times,current);
+                        if ((i != current ) && !currentVisited.contains(i))
                         {
-                            currentPath.nextEdge.edgesTotal++;
-                            currentPath.nextEdge.cost += times[current][i];
-                            currentPath = currentPath.nextEdge;
-                        }
-                        currentPath.nextEdge = new Path(i, 0, null);
-                        visited.get(current).add(i);
-                        pathTaken.add(newPath);
-                        visitedQueue.add(visited);
-                        if (EndsAtTerminal(newPath, floydWarshallGraph.length) && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
-                        {
-                            bestPath = newPath;
-                            verticesExitedWith = verticesTouched(bestPath,times.length);
+                            HashSet<Integer> visited = new HashSet<>(currentVisited);
+                            Path pathContiuation = availablePaths.get(i).CreateCopy();
+                            Path newPath = temp.CreateCopy();
+                            newPath.edgesTotal+= pathContiuation.edgesTotal;
+                            newPath.cost += pathContiuation.cost;
+                            Path currentPath = newPath;
+                            while (currentPath.nextEdge != null)
+                            {
+                                currentPath.nextEdge.edgesTotal+=pathContiuation.edgesTotal;
+                                currentPath.nextEdge.cost += pathContiuation.cost;
+                                currentPath = currentPath.nextEdge;
+                            }
+                            currentPath.nextEdge = pathContiuation.nextEdge;
+                            while (currentPath != null)
+                            {
+                                visited.add(currentPath.currentVertex);
+                                currentPath = currentPath.nextEdge;
+                            }
+                            pathTaken.add(newPath);
+                            visitedQueue.add(visited);
+                            if (getLastVertexOf(newPath) == times.length-1 && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
+                            {
+                                bestPath = newPath;
+                                verticesExitedWith = verticesTouched(newPath, times.length);
+                            }
                         }
                     }
                 }
@@ -227,18 +238,6 @@ public class Solution
             newPath = newPath.nextEdge;
         }
         return lastVertex;
-    }
-
-    private static boolean EndsAtTerminal(Path newPath, int endLength)
-    {
-        Path currentPath = newPath;
-        int lastVertex = 0;
-        while(currentPath.nextEdge != null)
-        {
-            currentPath = currentPath.nextEdge;
-            lastVertex = currentPath.currentVertex;
-        }
-        return lastVertex == endLength - 1;
     }
 
     public static int[] FindBunniesUsingBellman(int[][] times, int times_limit)
