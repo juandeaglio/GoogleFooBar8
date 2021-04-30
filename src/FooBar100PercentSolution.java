@@ -1,11 +1,20 @@
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.ArrayDeque;
 public class Solution
 {
+    public static int[] solution(int[][] times, int times_limit)
+    {
+        return RescueTheBunnies(times, times_limit);
+    }
     public static int[] RescueTheBunnies(int[][] times, int times_limit)
     {
         int[][] paths = new int[times.length][times.length];
         int[][] floydWarshallGraph = convertToFloydWarshall(times, paths);
+        //HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
         int[] result = null;
         if(times.length > 2)
         {
