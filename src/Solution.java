@@ -64,12 +64,12 @@ public class Solution
     }
     private static int[] BFSFloydWarshall(int[][]floydWarshallGraph, int[][] paths, int timeLimit, int[][] times)
     {
-        Queue<HashSet<Integer>> visitedQueue = new ArrayDeque<>();
+        Queue<HashMap<Integer,HashSet<Integer>>>visitedQueue = new ArrayDeque<>();
         Queue<Path> pathTaken = new ArrayDeque<>();
         pathTaken.add(new Path(0, 0, null));
-        visitedQueue.add(new HashSet<>());
-        HashSet<Integer> visitedTemp = visitedQueue.poll();
-        visitedTemp.add(0);
+        visitedQueue.add(new HashMap<>());
+        HashMap<Integer,HashSet<Integer>> visitedTemp = visitedQueue.poll();
+        visitedTemp.put(0, new HashSet<>());
         visitedQueue.add(visitedTemp);
         int max = 0;
         for(int i = 0; i < floydWarshallGraph.length; i++)
@@ -78,7 +78,8 @@ public class Solution
         Path bestPath = null;
         HashSet<HashSet<Integer>> attemptedVertices = new HashSet<>();
         int verticesExitedWith = 0;
-        while ((!pathTaken.isEmpty() || temp != null) && pathTaken.size() < 100)
+        int sizeOfQueue = 0;
+        while ((!pathTaken.isEmpty() || temp != null) )
         {
             if(pathTaken.peek() != null && pathTaken.peek().edgesTotal > max)
             {
@@ -88,36 +89,36 @@ public class Solution
             else
             {
                 temp = pathTaken.poll();
-                HashSet<Integer> currentVisited = visitedQueue.poll();
+                HashMap<Integer,HashSet<Integer>> currentVisited = visitedQueue.poll();
                 if (temp != null && currentVisited != null)
                 {
                     for (int i = 0; i < floydWarshallGraph.length; i++)
                     {
                         int current = getLastVertexOf(temp);
                         HashMap<Integer,Path> availablePaths = BellmanFordWithAGivenStart(times,current);
-                        if (( (i != current && !currentVisited.contains(i) ) || (i == times.length-1)))
+                        currentVisited.putIfAbsent(current, new HashSet<>());
+                        if ( ( (i != current ) || (i == times.length-1) ) && !currentVisited.get(current).contains(i))
                         {
-                            HashSet<Integer> visited = new HashSet<>(currentVisited);
-                            Path pathContiuation = availablePaths.get(i).CreateCopy();
+                            HashMap<Integer,HashSet<Integer>> visited = CopyHashMap(currentVisited);
+                            Path pathContinuation = availablePaths.get(i).CreateCopy();
                             Path newPath = temp.CreateCopy();
-                            newPath.edgesTotal+= pathContiuation.edgesTotal;
-                            newPath.cost += pathContiuation.cost;
+                            newPath.edgesTotal+= pathContinuation.edgesTotal;
+                            newPath.cost += pathContinuation.cost;
                             Path currentPath = newPath;
                             while (currentPath.nextEdge != null)
                             {
-                                currentPath.nextEdge.edgesTotal+=pathContiuation.edgesTotal;
-                                currentPath.nextEdge.cost += pathContiuation.cost;
+                                currentPath.nextEdge.edgesTotal+=pathContinuation.edgesTotal;
+                                currentPath.nextEdge.cost += pathContinuation.cost;
                                 currentPath = currentPath.nextEdge;
                             }
-                            currentPath.nextEdge = pathContiuation.nextEdge;
+                            currentPath.nextEdge = pathContinuation.nextEdge;
                             while (currentPath != null)
                             {
-                                visited.add(currentPath.currentVertex);
+                                visited.get(current).add(i);
                                 currentPath = currentPath.nextEdge;
                             }
                             pathTaken.add(newPath);
                             visitedQueue.add(visited);
-                            attemptedVertices.add(visited);
                             if (getLastVertexOf(newPath) == times.length-1 && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
                             {
                                 bestPath = newPath;
@@ -441,39 +442,6 @@ public class Solution
         }
         return sameOrIsSubsetOf;
     }
-
-    private static int IsVertexABunny(Path pathTaken , int j, int length)
-    {
-        Path tempPath = pathTaken;
-        boolean contains = false;
-        while(tempPath != null)
-        {
-            if (tempPath.currentVertex == j) {
-                contains = true;
-                break;
-            }
-            tempPath = tempPath.nextEdge;
-        }
-        if (j != 0 && j != length-1 && !contains)
-            return 1;
-        return 0;
-    }
-
-    private static boolean DoesPathCycle(int[][] floydWarGraph, Path path, int toAdd)
-    {
-        int totalCost = path.cost;
-        Path tempPath = path;
-        HashSet<Integer> verticesVisited = new HashSet<>();
-        while(tempPath != null)
-        {
-            if(verticesVisited.contains(tempPath.currentVertex))
-                return true;
-            verticesVisited.add(tempPath.currentVertex);
-            tempPath = tempPath.nextEdge;
-        }
-        return verticesVisited.contains(toAdd);
-    }
-
     static class Path
     {
         int currentVertex;

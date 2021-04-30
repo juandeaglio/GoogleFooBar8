@@ -170,6 +170,18 @@ public class SolutionUnitTests
         Assertions.assertNull(actualResult);
     }
     @Test
+    public void ShouldNavigateWith0TimeLimit()
+    {
+        int[][]graph = {
+                {0,0,1},
+                {0,0,0},
+                {1,0,0}};
+        int timeLimit = 0;
+        int[]expectedResult = {0};
+        int[]actualResult = Solution.RescueTheBunnies(graph, timeLimit);
+        Assertions.assertArrayEquals(expectedResult,actualResult);
+    }
+    @Test
     public void ShouldReturnOnlyOneBunny()
     {
         int[][]graph = {
