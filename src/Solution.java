@@ -10,7 +10,7 @@ public class Solution
         int[] result = null;
         if(times.length > 2)
         {
-            if (FindCycleIfExists(times) || HasNegativeCycle(floydWarshallGraph, times_limit))
+            if (HasNegativeCycle(floydWarshallGraph, times_limit))
             {
                 result = new int[times.length-2];
                 for (int i = 0; i < times.length - 2; i++)
@@ -79,7 +79,7 @@ public class Solution
         HashSet<HashSet<Integer>> attemptedVertices = new HashSet<>();
         int verticesExitedWith = 0;
         int sizeOfQueue = 0;
-        while ((!pathTaken.isEmpty() || temp != null) )
+        while ((!pathTaken.isEmpty() || temp != null) && verticesTouched(bestPath, times.length) != times.length-2 )
         {
             if(pathTaken.peek() != null && pathTaken.peek().edgesTotal > max)
             {
