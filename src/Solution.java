@@ -206,7 +206,7 @@ public class Solution
                 {
                     for(int j = 0; j < times[i].length; j++)
                     {
-                        if(j != i && ((bellmanVertexArr.get(i).cost + times[i][j] < bellmanVertexArr.get(j).cost) || ((bellmanVertexArr.get(i).cost + times[i][j] == bellmanVertexArr.get(j).cost) && IsNewAndNotCyclical(bellmanVertexArr.get(i), times.length))))
+                        if(j != i && ((bellmanVertexArr.get(i).cost + times[i][j] < bellmanVertexArr.get(j).cost) ))
                         {
                             Path newPath;
                             newPath = bellmanVertexArr.get(i).CreateCopy();
@@ -228,58 +228,6 @@ public class Solution
             timesDone++;
         }
         return bellmanVertexArr;
-    }
-
-    private static boolean IsNewAndNotCyclical(Path currentPath, int maxLen)
-    {
-        boolean[] verticesVisited = new boolean[maxLen];
-        boolean[] compareVertices = new boolean[maxLen];
-        boolean cycleDetected = false;
-        boolean cycleEnded = false;
-        int count = 0;
-        int start = 0;
-        int iterations = 0;
-        Path tempPath = currentPath;
-
-        while(tempPath != null && !cycleEnded)
-        {
-            if(verticesVisited[tempPath.currentVertex])
-            {
-                if(!cycleDetected)
-                {
-                    start = iterations;
-                    cycleDetected = true;
-                }
-                count++;
-            }
-            else
-            {
-                verticesVisited[tempPath.currentVertex] = true;
-                if(cycleDetected)
-                {
-                    cycleEnded = true;
-                    cycleDetected = false;
-                }
-            }
-            tempPath = tempPath.nextEdge;
-            iterations++;
-        }
-        tempPath = currentPath;
-        while(tempPath != null && !cycleDetected)
-        {
-            if(compareVertices[tempPath.currentVertex])
-            {
-                cycleDetected = true;
-            }
-            tempPath = tempPath.nextEdge;
-        }
-        boolean sameOrIsSubsetOf = true;
-        for(int i = 0; i < compareVertices.length && sameOrIsSubsetOf; i++)
-        {
-            if (compareVertices[i] != verticesVisited[i])
-                sameOrIsSubsetOf = false;
-        }
-        return sameOrIsSubsetOf;
     }
     static class Path
     {
