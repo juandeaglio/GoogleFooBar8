@@ -17,7 +17,7 @@ public class Solution
             }
             else
             {
-                result = BFSFloydWarshall(floydWarshallGraph, paths, times_limit, times);
+                result = BFSFloydWarshall(paths, times_limit, times);
             }
         }
         return result;
@@ -25,10 +25,10 @@ public class Solution
 
     private static boolean HasNegativeCycle(int[][] floydWarshallGraph)
     {
-        int max = Integer.MAX_VALUE;
+        int min = Integer.MAX_VALUE;
         for(int i = 0; i < floydWarshallGraph.length; i++)
-            max = Math.min(max, floydWarshallGraph[i][i]);
-        return max < 0;
+            min = Math.min(min, floydWarshallGraph[i][i]);
+        return min < 0;
     }
 
     private static int[][] convertToFloydWarshall(int[][] times)
@@ -58,7 +58,7 @@ public class Solution
         }
         return distances;
     }
-    private static int[] BFSFloydWarshall(int[][]floydWarshallGraph, int[][] paths, int timeLimit, int[][] times)
+    private static int[] BFSFloydWarshall(int[][] paths, int timeLimit, int[][] times)
     {
         Queue<HashMap<Integer,HashSet<Integer>>>visitedQueue = new ArrayDeque<>();
         Queue<Path> pathTaken = new ArrayDeque<>();
@@ -68,7 +68,7 @@ public class Solution
         visitedTemp.put(0, new HashSet<>());
         visitedQueue.add(visitedTemp);
         int max = 0;
-        for(int i = 0; i < floydWarshallGraph.length; i++)
+        for(int i = 0; i < times.length; i++)
             max = Math.max(max, paths[0][i])+1;
         Path temp = null;
         Path bestPath = null;
@@ -87,7 +87,7 @@ public class Solution
                 HashMap<Integer,HashSet<Integer>> currentVisited = visitedQueue.poll();
                 if (temp != null && currentVisited != null)
                 {
-                    for (int i = 0; i < floydWarshallGraph.length; i++)
+                    for (int i = 0; i < times.length; i++)
                     {
                         int current = getLastVertexOf(temp);
                         HashMap<Integer,Path> availablePaths = BellmanFordWithAGivenStart(times,current);
