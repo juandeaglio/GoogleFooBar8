@@ -78,18 +78,6 @@ public class SolutionUnitTests
         Assertions.assertArrayEquals(expectedResult, actualResult);
     }
     @Test
-    public void ShouldFindACycleWithinAnIncompleteGraph()
-    {
-        int[][]graph = {
-                {0, 1, 1, 1, 1},
-                {1, 0, 1, 1, 1},
-                {1, 1, 0, 1, 1},
-                {1, 1, 1, 0, 1},
-                {1, 1, 1, 1, -1}};
-        boolean actualResult = Solution.FindCycleIfExists(graph);
-        Assertions.assertTrue(actualResult);
-    }
-    @Test
     public void ShouldReturnThreeBunniesOnBasicGraph()
     {
         int[][]graph = {
@@ -102,32 +90,6 @@ public class SolutionUnitTests
         int[] expectedResult = {0,1,2};
         int[] actualResult = Solution.RescueTheBunnies(graph,timeLimit);
         Assertions.assertArrayEquals(expectedResult, actualResult);
-    }
-    @Test
-    public void ShouldFindANegativeCycleBetweenTwoVertices()
-    {
-        int[][]graph = {
-                {0, 1, 1, 1, 1},
-                {1, 0, 1, 1, 1},
-                {1, 1, 0, -1, 1},
-                {1, 1, -1, 0, 1},
-                {1, 1, 1, 1, 1}};
-        boolean actualResult = Solution.FindCycleIfExists(graph);
-        Assertions.assertTrue(actualResult);
-    }
-    @Test
-    public void ShouldFindANegativeCycleBetweenManyVertices()
-    {
-        int[][] graph = {
-                {0, 1, 1, 1, 1, 2, 2},
-                {1, 0, 1, 1, 3, 1, 1},
-                {1, 1, 0, 1, 1, 1, -1},
-                {1, -4, 1, 0, 1, 1, 1},
-                {1, 1, 1, 1, 0, 1, 1},
-                {1, 1, 1, 1, 1, 0, 2},
-                {1, -10, 1, 1, 1, 1, 0},};
-        boolean actualResult = Solution.FindCycleIfExists(graph);
-        Assertions.assertTrue(actualResult);
     }
     @Test
     public void ShouldReturnAllPossibleBunnies()

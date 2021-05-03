@@ -5,11 +5,11 @@ public class Solution
     public static int[] RescueTheBunnies(int[][] times, int times_limit)
     {
         int[][] paths = new int[times.length][times.length];
-        int[][] floydWarshallGraph = convertToFloydWarshall(times, paths);
+        int[][] floydWarshallGraph = convertToFloydWarshall(times);
         int[] result = null;
         if(times.length > 2)
         {
-            if (HasNegativeCycle(floydWarshallGraph, times_limit))
+            if (HasNegativeCycle(floydWarshallGraph))
             {
                 result = new int[times.length-2];
                 for (int i = 0; i < times.length - 2; i++)
@@ -23,7 +23,7 @@ public class Solution
         return result;
     }
 
-    private static boolean HasNegativeCycle(int[][] floydWarshallGraph, int timeLimit)
+    private static boolean HasNegativeCycle(int[][] floydWarshallGraph)
     {
         int max = Integer.MAX_VALUE;
         for(int i = 0; i < floydWarshallGraph.length; i++)
@@ -31,7 +31,7 @@ public class Solution
         return max < 0;
     }
 
-    private static int[][] convertToFloydWarshall(int[][] times, int[][] paths)
+    private static int[][] convertToFloydWarshall(int[][] times)
     {
         int[][] distances = new int[times.length][times.length];
         for(int i = 0; i < distances.length; i++)
@@ -41,10 +41,7 @@ public class Solution
         for(int i = 0; i < distances.length; i++)
         {
             Arrays.fill(distances[i], Integer.MAX_VALUE);
-            for(int j = 0; j < distances.length; j++)
-            {
-                distances[i][j] = times[i][j];
-            }
+            System.arraycopy(times[i], 0, distances[i], 0, distances.length);
         }
         for(int i = 0; i < distances.length; i++)
         {
@@ -75,9 +72,7 @@ public class Solution
             max = Math.max(max, paths[0][i])+1;
         Path temp = null;
         Path bestPath = null;
-        HashSet<HashSet<Integer>> attemptedVertices = new HashSet<>();
         int verticesExitedWith = 0;
-        int sizeOfQueue = 0;
         int iterations = 0;
         while ((!pathTaken.isEmpty() || temp != null) && verticesTouched(bestPath, times.length) != times.length-2 && iterations < 2000 )
         {
@@ -119,7 +114,7 @@ public class Solution
                             }
                             pathTaken.add(newPath);
                             visitedQueue.add(visited);
-                            if (getLastVertexOf(newPath) == times.length-1 && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
+                            if (i == times.length-1 && verticesTouched(newPath, times.length) > verticesExitedWith && newPath.cost <= timeLimit)
                             {
                                 bestPath = newPath;
                                 verticesExitedWith = verticesTouched(newPath, times.length);
@@ -173,54 +168,6 @@ public class Solution
         return bunniesFound.size();
     }
 
-    private static boolean HasSmallerPathThanOther(Path newPath, Path bestPath, int length)
-    {
-        int[] result = null;
-        int[] result2 = null;
-        HashSet<Integer> bunniesFound = new HashSet<>();
-        Path path1 = newPath;
-        Path path2 = bestPath;
-        if(bestPath != null && bestPath.edgesTotal > 2)
-        {
-            while(path1 != null)
-            {
-                if(path1.currentVertex != 0 && path1.currentVertex != length-1)
-                {
-                    bunniesFound.add(path1.currentVertex-1);
-                }
-                path1 = path1.nextEdge;
-            }
-            result = new int[bunniesFound.size()];
-            for (Integer vertex: bunniesFound)
-            {
-                result[0] = vertex;
-            }
-            Arrays.sort(result);
-            bunniesFound = new HashSet<>();
-            while(path2 != null)
-            {
-                if(path2.currentVertex != 0 && path2.currentVertex != length-1)
-                {
-                    bunniesFound.add(path2.currentVertex-1);
-                }
-                path2 = path2.nextEdge;
-            }
-            result2 = new int[bunniesFound.size()];
-            for (Integer vertex: bunniesFound)
-            {
-                result2[0] = vertex;
-            }
-            Arrays.sort(result2);
-            for(int i = 0; i < result.length; i++)
-            {
-                if(result[i] < result2[i])
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
     private static HashMap<Integer, HashSet<Integer>> CopyHashMap(HashMap<Integer, HashSet<Integer>> currentVisited)
     {
         HashMap<Integer, HashSet<Integer>> newMap = new HashMap<>();
@@ -243,114 +190,6 @@ public class Solution
         }
         return lastVertex;
     }
-
-    public static int[] FindBunniesUsingBellman(int[][] times, int times_limit)
-    {
-        //TODO: handle null case
-        ArrayList<Integer> bunniesResult = new ArrayList<>();
-        int timeLimit = times_limit;
-        if(times.length > 2) {
-            if (FindCycleIfExists(times))
-            {
-                bunniesResult = new ArrayList<>();
-                for (int i = 0; i < times.length - 2; i++)
-                    bunniesResult.add(i);
-            }
-            else
-            {
-                HashMap<Integer, Path> bellmanVertexArr = BellmanFordWithAGivenStart(times, 0);
-                int[][] bellmanGraph = new int[times.length][times.length];
-                for(int i = 0; i < times.length; i++)
-                {
-                    for(int j = 0; j < times.length; j++)
-                    {
-                        bellmanGraph[i][j] = BellmanFordWithAGivenStart(times, i).get(j).cost;
-                    }
-                }
-                int minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, 0, bunniesResult,timeLimit);
-                int origin = 0;
-                HashMap<Integer, Path> bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                Path pathBeingEvaluated = null;
-                int pathNextChoice = 0;
-                while ((timeLimit - pathNextChoice >= bellmanVertexArrFuture.get(times.length - 1).cost) && minimumCostVertexChosen != -1)
-                {
-                    if (pathBeingEvaluated == null)
-                    {
-                        pathBeingEvaluated = bellmanVertexArr.get(minimumCostVertexChosen);
-                        if (pathBeingEvaluated.nextEdge != null)
-                            pathBeingEvaluated = pathBeingEvaluated.nextEdge;
-                        bellmanVertexArr = BellmanFordWithAGivenStart(times, minimumCostVertexChosen);
-                    }
-                    else
-                    {
-                        timeLimit -= times[origin][pathBeingEvaluated.currentVertex];
-                        if (pathBeingEvaluated.currentVertex > 0 && pathBeingEvaluated.currentVertex < times.length - 1 && !bunniesResult.contains(pathBeingEvaluated.currentVertex - 1))
-                            bunniesResult.add(pathBeingEvaluated.currentVertex - 1);
-                        origin = pathBeingEvaluated.currentVertex;
-                        minimumCostVertexChosen = GetMinimumExcludingCurrent(bellmanVertexArr, origin, bunniesResult,timeLimit);
-                        if(pathBeingEvaluated.nextEdge != null)
-                            bellmanVertexArrFuture = BellmanFordWithAGivenStart(times, pathBeingEvaluated.nextEdge.currentVertex);
-                        pathBeingEvaluated = pathBeingEvaluated.nextEdge;
-                    }
-                    if (pathBeingEvaluated != null)
-                        pathNextChoice = times[origin][pathBeingEvaluated.currentVertex];
-                    else
-                        pathNextChoice = 0;
-                }
-            }
-        }
-        int[] result = null;
-        if(bunniesResult.size() >= 1)
-        {
-            result = bunniesResult.stream().mapToInt(i -> i).toArray();
-            Arrays.sort(result);
-        }
-
-        return result;
-    }
-
-    private static int GetMinimumExcludingCurrent(HashMap<Integer, Path> bellmanVertexArr, int excluding, ArrayList<Integer> bunniesPickedUp, int timeLimit)
-    {
-        int rowChosen = -1;
-        int maxEdges = 0;
-        int minCost = Integer.MAX_VALUE;
-        int newTouched = 0;
-        for(int i = 0; i < bellmanVertexArr.size(); i++)
-        {
-            int touched = AmntOfNewVerticesTouched(bunniesPickedUp, bellmanVertexArr.get(i), bellmanVertexArr.size());
-            if(i != excluding && touched >= newTouched && touched != 0)
-            {
-                if(bellmanVertexArr.get(i).edgesTotal > maxEdges)
-                {
-                    maxEdges = bellmanVertexArr.get(i).edgesTotal;
-                    rowChosen = i;
-                    minCost = bellmanVertexArr.get(i).cost;
-                    newTouched = touched;
-                }
-                else if(bellmanVertexArr.get(i).edgesTotal == maxEdges && bellmanVertexArr.get(i).cost < minCost)
-                {
-                    minCost = bellmanVertexArr.get(i).cost;
-                    rowChosen = i;
-                    newTouched = touched;
-                }
-            }
-        }
-        return rowChosen;
-    }
-
-    private static int AmntOfNewVerticesTouched(ArrayList<Integer> bunniesPickedUp, Path path, int length)
-    {
-        Path currentPath = path;
-        int amnt = 0;
-        while(currentPath != null)
-        {
-            if(!bunniesPickedUp.contains(currentPath.currentVertex-1) && currentPath.currentVertex != 0 && currentPath.currentVertex != length-1)
-                amnt++;
-            currentPath = currentPath.nextEdge;
-        }
-        return amnt;
-    }
-
     private static HashMap<Integer,Path> BellmanFordWithAGivenStart(int[][] times, int start) {
         HashMap<Integer,Path> bellmanVertexArr = new HashMap<>();
         for(int i = 0; i< times[0].length; i++)
@@ -400,7 +239,6 @@ public class Solution
         int count = 0;
         int start = 0;
         int iterations = 0;
-        //if(verticesTouched(currentPath, maxLen) + IsVertexABunny(currentPath, currentJ, maxLen) > verticesTouched(currentPath, maxLen))
         Path tempPath = currentPath;
 
         while(tempPath != null && !cycleEnded)
@@ -471,66 +309,6 @@ public class Solution
                 currentPath = currentPath.nextEdge;
             }
             return newPath;
-        }
-    }
-
-    private static boolean DFSForNegativeCycle(int i, boolean[] visited,
-                                               boolean[] recStack, int[][] graph, int totalCost)
-    {
-        if (recStack[i] && totalCost < 0)
-            return true;
-        if (visited[i])
-            return false;
-        visited[i] = true;
-        recStack[i] = true;
-        HashSet<Integer> children = GetEdgesFromVertex(graph,i);
-
-        for (Integer c: children)
-        {
-            boolean[] newVisited = Arrays.copyOf(visited, graph.length);
-            if (DFSForNegativeCycle(c, newVisited, recStack, graph, graph[i][c] + totalCost))
-                return true;
-        }
-
-        recStack[i] = false;
-
-        return false;
-    }
-
-    private static HashSet<Integer> GetEdgesFromVertex(int[][] graph, int i)
-    {
-        HashSet<Integer> edges = new HashSet<>();
-        for(int j = 0; j < graph.length; j++)
-        {
-            if(j != i)
-                edges.add(j);
-        }
-        return edges;
-    }
-
-    private static boolean isNegativeCyclic(int[][]graph)
-    {
-        boolean[] visited = new boolean[graph.length];
-        boolean[] recStack = new boolean[graph.length];
-        for (int i = 0; i < graph.length; i++)
-            if (DFSForNegativeCycle(i, visited, recStack, graph, 0))
-                return true;
-        return false;
-    }
-
-    public static boolean FindCycleIfExists(int[][] graph)
-    {
-        int cycleRow = -1;
-        for(int i = 0; i < graph.length && cycleRow == -1; i++)
-        {
-            if(graph[i][i] < 0)
-                cycleRow = i;
-        }
-        if(cycleRow != -1)
-            return true;
-        else
-        {
-            return isNegativeCyclic(graph);
         }
     }
 
